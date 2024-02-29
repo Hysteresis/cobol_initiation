@@ -30,6 +30,8 @@
            05  montant_transaction PIC 9(4)V99.
            
        WORKING-STORAGE SECTION.
+       01  le_montant PIC 9(5) VALUE 500.
+       01 ws-file-status PIC XX.
        01  solde USAGE COMP-1 VALUE 100 .
        01  solde_b USAGE COMP-1 VALUE 200 .
        01  compte_b PIC 9(4) VALUE 0545.
@@ -69,9 +71,8 @@
 
 
        PROCEDURE DIVISION.
-       *>Modifiez le fichier GestionCompteBancaire afin d'enregistrer 
-       *>le solde des comptes dans un fichier, et l'historique dans un 
-       *>autre. Pour chaque transaction, notez le montant et l'action.
+           CALL 'verifier_fichier' USING 'V' 
+
            PERFORM UNTIL continuer = 'y'
                DISPLAY tiret_menu
                DISPLAY "     Menu "
@@ -88,9 +89,10 @@
                        DISPLAY "Merci de votre visite."
                        GOBACK
                    WHEN '1'
-                       PERFORM DEPOT
+                       CALL 'depot' USING 'D' montant_depot
+
                    WHEN '2'
-                       PERFORM RETRAIT
+                       CALL 'retrait' USING 'D' MONTANT_RETRAIT
                    WHEN '3'
                        PERFORM VIREMENT
                    WHEN '4'
@@ -100,7 +102,6 @@
                END-EVALUATE
             END-PERFORM
             GOBACK.
-       
 
        HISTORIQUE_DEPOT.
            OPEN EXTEND historique.
@@ -130,32 +131,20 @@
            END-WRITE
            CLOSE historique.
            
-       DEPOT.
-           PERFORM MON_SOLDE
-           DISPLAY tiret_menu.
-           DISPLAY "---->  depot :".
-           DISPLAY tiret_menu.
-           ACCEPT montant_depot.
-           DISPLAY "Le DEPOT est ",montant_depot, " €".
-           COMPUTE solde = solde + montant_depot.
-
-           PERFORM NOUVEAU_SOLDE.
-           PERFORM HISTORIQUE_DEPOT.
-
-       RETRAIT.
-           PERFORM MON_SOLDE
-           DISPLAY tiret_menu.
-           DISPLAY "-->  Retrait :"
-           DISPLAY tiret_menu.
-           ACCEPT montant_retrait
-           IF solde < montant_retrait THEN
-               DISPLAY "Pas assez de solde"
-           ELSE
-               COMPUTE solde = solde - montant_retrait
-               DISPLAY "Le RETRAIT est ", montant_retrait, " €"
-               PERFORM NOUVEAU_SOLDE
-           END-IF.
-           PERFORM HISTORIQUE_RETRAIT.
+      *>RETRAIT.
+      *>    PERFORM MON_SOLDE
+      *>    DISPLAY tiret_menu.
+      *>    DISPLAY "-->  Retrait :"
+      *>    DISPLAY tiret_menu.
+      *>    ACCEPT montant_retrait
+      *>    IF solde < montant_retrait THEN
+      *>        DISPLAY "Pas assez de solde"
+      *>    ELSE
+      *>        COMPUTE solde = solde - montant_retrait
+      *>        DISPLAY "Le RETRAIT est ", montant_retrait, " €"
+      *>        PERFORM NOUVEAU_SOLDE
+      *>    END-IF.
+      *>    PERFORM HISTORIQUE_RETRAIT.
 
        VIREMENT.
            PERFORM MON_SOLDE
@@ -197,16 +186,11 @@
            DISPLAY saut_ligne.
 
            MOVE FUNCTION CURRENT-DATE TO date_heure.
-           MOVE annee TO annee_solde. 
-       *>    DISPLAY "annee :::: ", annee.
+           MOVE annee TO annee_solde.
            MOVE mois TO mois_solde
-       *>    DISPLAY "mois :::", mois_solde.
            MOVE jour TO jour_solde
-       *>    DISPLAY "jour :::", jour_solde.
            MOVE heure TO heure_solde
-       *>    DISPLAY "heure :::", heure_solde.
            MOVE minute TO minute_solde
-       *>    DISPLAY "minute :::", minute_solde.
            MOVE seconde TO seconde_solde
       
            STRING annee DELIMITED BY SPACE 
@@ -221,7 +205,6 @@
                     '.'  DELIMITED BY SPACE
                    seconde DELIMITED BY SPACE 
            INTO date_heure_solde
-
            
            DISPLAY "STR date_heure_solde :", date_heure_solde
            
