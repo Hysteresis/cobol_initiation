@@ -8,6 +8,8 @@
            SELECT le_solde ASSIGN TO 'le_solde' 
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS WS-FILE-STATUS.
+           SELECT historique ASSIGN TO 'historique' 
+           ORGANIZATION  IS LINE SEQUENTIAL.
        *> -m pour le subprogram et pas -x
        DATA DIVISION.
        FILE SECTION.
@@ -23,7 +25,13 @@
            05  espace_solde PIC X(2)  VALUES SPACES.
            05  label_solde PIC X(7) VALUES "Solde :" .
            05  montant_solde PIC 9(4)V99.
-       01  str_solde PIC X(20).  
+       01  str_solde PIC X(20). 
+       FD historique.
+       01 transactions.
+           05  date_heure_transaction PIC X(14) VALUES SPACES.
+           05  espace_transaction PIC X(2) .
+           05  action_transaction PIC X(10) VALUES SPACES.
+           05  montant_transaction PIC 9(4)V99.
        WORKING-STORAGE SECTION.
        01  ws-file-status pic XX.
         01  solde USAGE COMP-1 VALUE 100 .
@@ -82,11 +90,23 @@
            ELSE
                COMPUTE solde = solde - montant_retrait
                DISPLAY "Le RETRAIT est ", montant_retrait, " €"
-               
+               PERFORM HISTORIQUE_RETRAIT
            END-IF.
 
            DISPLAY "Gate retrait".
 
-           
+       HISTORIQUE_RETRAIT.
+           OPEN EXTEND historique.
+           MOVE "Retrait :" TO action_transaction.
+           MOVE montant_retrait TO montant_transaction.  
+           MOVE FUNCTION CURRENT-DATE TO date_heure_trans.         
+           MOVE date_heure_trans TO date_heure_transaction.
+
+           MOVE ESPACE TO ESPACE_TRANSACTION.
+           WRITE transactions
+           END-WRITE
+           CLOSE historique.
+
+
            EXIT PROGRAM.
        END PROGRAM retrait.

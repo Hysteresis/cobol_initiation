@@ -1,5 +1,5 @@
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. depot.
+       PROGRAM-ID. virement.
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -8,10 +8,6 @@
            SELECT le_solde ASSIGN TO 'le_solde' 
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS WS-FILE-STATUS.
-
-           SELECT historique ASSIGN TO 'historique' 
-           ORGANIZATION  IS LINE SEQUENTIAL.
-           
        *> -m pour le subprogram et pas -x
        DATA DIVISION.
        FILE SECTION.
@@ -27,13 +23,7 @@
            05  espace_solde PIC X(2)  VALUES SPACES.
            05  label_solde PIC X(7) VALUES "Solde :" .
            05  montant_solde PIC 9(4)V99.
-       01  str_solde PIC X(20).
-       FD historique.
-       01 transactions.
-           05  date_heure_transaction PIC X(14) VALUES SPACES.
-           05  espace_transaction PIC X(2) .
-           05  action_transaction PIC X(10) VALUES SPACES.
-           05  montant_transaction PIC 9(4)V99.
+       01  str_solde PIC X(20).  
        WORKING-STORAGE SECTION.
        01  ws-file-status pic XX.
         01  solde USAGE COMP-1 VALUE 100 .
@@ -73,40 +63,37 @@
        77  myDisplayMessage pic X(100).
        LINKAGE SECTION.
        01  ls_operation PIC X.
-       01  ls_MONTANT_DEPOT PIC 9(4)V99 COMP.
+       01  ls_MONTANT_VIREMENT PIC 9(4)V99 COMP.
 
-       PROCEDURE DIVISION USING ls_operation, ls_MONTANT_DEPOT.
+       PROCEDURE DIVISION USING ls_operation, ls_MONTANT_VIREMENT.
            EVALUATE ls_operation
-           WHEN "D" PERFORM DEPOT
+           WHEN "VIR" PERFORM VIREMENT
            END-EVALUATE.
            
            STOP RUN.
-           
-       DEPOT.
-           DISPLAY tiret_menu.
-           DISPLAY "---->  depot :".
-           DISPLAY tiret_menu.
-           ACCEPT montant_depot.
-           DISPLAY "Le DEPOT est ",montant_depot, " €".
-           COMPUTE solde = solde + montant_depot.
-           DISPLAY "Le nouveau solde est ",solde, " €".
-           PERFORM HISTORIQUE_DEPOT
-           DISPLAY "Gate depot".
-       
 
-       HISTORIQUE_DEPOT.
-           OPEN EXTEND historique.
-           MOVE "Depot :" TO action_transaction.
-           MOVE montant_depot TO montant_transaction.
+       VIREMENT.
+           DISPLAY "Saisir le compte à solder:".
+      *>   saisir le compte a solder : 0545    
+           ACCEPT compte_x.
+           if compte_x =  COMPTE_B THEN
+               DISPLAY "Saisir la somme à virer:"
+               ACCEPT somme_a_virer
+               if SOMME_A_VIRER < solde THEN
+                   COMPUTE SOLDE_B = SOLDE_B + SOMME_A_VIRER
+                   COMPUTE SOLDE = SOLDE - SOMME_A_VIRER
+                   DISPLAY "--> Le virement de ", 
+                               SOMME_A_VIRER , 
+                               " € a bien été effectué"
+                        
+                ELSE 
+                   DISPLAY "Votre solde ne permet pas de virer ", 
+                               SOMME_A_VIRER " €, car Votre SOLDE :", 
+                               solde 
+           ELSE 
+               DISPLAY " Numero de compte erroné"
+           END-IF.
 
-           MOVE FUNCTION CURRENT-DATE TO date_heure_trans.         
-           MOVE date_heure_trans TO date_heure_transaction.
-
-           MOVE ESPACE TO ESPACE_TRANSACTION.
-           WRITE transactions
-           
-           END-WRITE
-           CLOSE historique.
            
            EXIT PROGRAM.
-       END PROGRAM depot.
+       END PROGRAM virement.

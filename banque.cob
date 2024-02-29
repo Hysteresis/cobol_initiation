@@ -92,9 +92,9 @@
                        CALL 'depot' USING 'D' montant_depot
 
                    WHEN '2'
-                       CALL 'retrait' USING 'D' MONTANT_RETRAIT
+                       CALL 'retrait' USING 'R' MONTANT_RETRAIT
                    WHEN '3'
-                       PERFORM VIREMENT
+                       CALL 'retrait' USING 'VIR' MONTANT_VIREMENT
                    WHEN '4'
                        PERFORM MON_SOLDE
                     WHEN OTHER
@@ -103,25 +103,6 @@
             END-PERFORM
             GOBACK.
 
-       HISTORIQUE_DEPOT.
-           OPEN EXTEND historique.
-           MOVE "Depot :" TO action_transaction.
-           MOVE montant_depot TO montant_transaction.
-           MOVE FUNCTION CURRENT-DATE TO date_heure_trans.
-           
-           MOVE date_heure_trans TO date_heure_transaction.
-           MOVE ESPACE TO ESPACE_TRANSACTION.
-           WRITE transactions
-           END-WRITE
-           CLOSE historique.
-
-       HISTORIQUE_RETRAIT.
-           OPEN EXTEND historique.
-           MOVE "Retrait :" TO action_transaction.
-           MOVE montant_retrait TO montant_transaction.        
-           WRITE transactions
-           END-WRITE
-           CLOSE historique.
 
        HISTORIQUE_VIREMENT.
            OPEN EXTEND historique.
@@ -131,45 +112,6 @@
            END-WRITE
            CLOSE historique.
            
-      *>RETRAIT.
-      *>    PERFORM MON_SOLDE
-      *>    DISPLAY tiret_menu.
-      *>    DISPLAY "-->  Retrait :"
-      *>    DISPLAY tiret_menu.
-      *>    ACCEPT montant_retrait
-      *>    IF solde < montant_retrait THEN
-      *>        DISPLAY "Pas assez de solde"
-      *>    ELSE
-      *>        COMPUTE solde = solde - montant_retrait
-      *>        DISPLAY "Le RETRAIT est ", montant_retrait, " €"
-      *>        PERFORM NOUVEAU_SOLDE
-      *>    END-IF.
-      *>    PERFORM HISTORIQUE_RETRAIT.
-
-       VIREMENT.
-           PERFORM MON_SOLDE
-           DISPLAY "Saisir le compte à solder:".
-      *>   saisir le compte a solder : 0545    
-           ACCEPT compte_x.
-           if compte_x =  COMPTE_B THEN
-               DISPLAY "Saisir la somme à virer:"
-               ACCEPT somme_a_virer
-               if SOMME_A_VIRER < solde THEN
-                   COMPUTE SOLDE_B = SOLDE_B + SOMME_A_VIRER
-                   COMPUTE SOLDE = SOLDE - SOMME_A_VIRER
-                   DISPLAY "--> Le virement de ", 
-                               SOMME_A_VIRER , 
-                               " € a bien été effectué"
-                        
-                   PERFORM NOUVEAU_SOLDE
-                   PERFORM HISTORIQUE_VIREMENT
-                ELSE 
-                   DISPLAY "Votre solde ne permet pas de virer ", 
-                               SOMME_A_VIRER " €, car Votre SOLDE :", 
-                               solde 
-           ELSE 
-               DISPLAY " Numero de compte erroné"
-           END-IF.
       
        MON_SOLDE.
            DISPLAY saut_ligne.
