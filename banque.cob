@@ -31,7 +31,7 @@
            
        WORKING-STORAGE SECTION.
        01  le_montant PIC 9(5) VALUE 500.
-       01 ws-file-status PIC XX.
+       01  ws-file-status PIC XX.
        01  solde USAGE COMP-1 VALUE 100 .
        01  solde_b USAGE COMP-1 VALUE 200 .
        01  compte_b PIC 9(4) VALUE 0545.
@@ -42,7 +42,6 @@
        01  somme_a_virer PIC 9(4)V99.
        01  choix_menu PIC X.
        01  continuer PIC X.
-
        01 date_heure. 
            05 annee   PIC X(4).
            05 mois    PIC X(2).
@@ -50,23 +49,17 @@
            05 heure   PIC X(2).
            05 minute  PIC X(2).
            05 seconde PIC X(2).
-
-
        01  transaction.
            02 montant PIC 9(5)V99.
            02 action PIC X(20).
-           02 date_heure_trans PIC X(20).
-       
+           02 date_heure_trans PIC X(20).      
        77  etoiles PIC X(50) VALUE 
            "****************************".
        77  les_plus PIC X(50) VALUE 
            "+++++++++++++++++++++++++++++++".
-       77  saut_ligne PIC X(3) VALUE
-           " ".
-       77  tiret_menu PIC X(20) VALUE
-           "-------------- ".
-       77  espace PIC X(20) VALUE
-           "  ".
+       77  saut_ligne PIC X(3) VALUE " ".
+       77  tiret_menu PIC X(20) VALUE  "-------------- ".
+       77  espace PIC X(20) VALUE  "  ".
        77  myDisplayMessage pic X(100).
 
 
@@ -89,72 +82,20 @@
                        DISPLAY "Merci de votre visite."
                        GOBACK
                    WHEN '1'
-                       CALL 'depot' USING 'D' montant_depot
+                       CALL 'depot' USING 'D' montant_depot, solde
+                       CALL 'nouveau_solde' USING 'N' solde
 
                    WHEN '2'
-                       CALL 'retrait' USING 'R' MONTANT_RETRAIT
+                       CALL 'retrait' USING 'R' montant_retrait, solde
+                       CALL 'nouveau_solde' USING 'N' solde 
                    WHEN '3'
-                       CALL 'retrait' USING 'VIR' MONTANT_VIREMENT
+                       CALL 'virement' USING 'V' montant_virement, solde
+                       CALL 'nouveau_solde' USING 'N' solde 
                    WHEN '4'
-                       PERFORM MON_SOLDE
+                       CALL 'mon_solde' USING 'S' solde
                     WHEN OTHER
                         DISPLAY "/!\ Choix non reconnu"
                END-EVALUATE
             END-PERFORM
             GOBACK.
-
-
-       HISTORIQUE_VIREMENT.
-           OPEN EXTEND historique.
-           MOVE "Virement :" TO action_transaction.
-           MOVE SOMME_A_VIRER TO montant_transaction.        
-           WRITE transactions
-           END-WRITE
-           CLOSE historique.
-           
-      
-       MON_SOLDE.
-           DISPLAY saut_ligne.
-           DISPLAY etoiles.
-           DISPLAY "     Mon solde : ",solde, " € ".
-           DISPLAY etoiles.
-           DISPLAY saut_ligne.
-
-       NOUVEAU_SOLDE.
-           DISPLAY saut_ligne.
-           DISPLAY etoiles.
-           DISPLAY "     Nouveau solde : ",solde, " € "
-           DISPLAY etoiles.
-           DISPLAY saut_ligne.
-
-           MOVE FUNCTION CURRENT-DATE TO date_heure.
-           MOVE annee TO annee_solde.
-           MOVE mois TO mois_solde
-           MOVE jour TO jour_solde
-           MOVE heure TO heure_solde
-           MOVE minute TO minute_solde
-           MOVE seconde TO seconde_solde
-      
-           STRING annee DELIMITED BY SPACE 
-                   '/' DELIMITED BY SPACE
-                   mois DELIMITED BY SPACE 
-                   '/' DELIMITED BY SPACE
-                   jour DELIMITED BY SPACE 
-                   '/' DELIMITED BY SPACE
-                   heure DELIMITED BY SPACE 
-                   ':'  DELIMITED BY SPACE
-                   minute DELIMITED BY SPACE 
-                    '.'  DELIMITED BY SPACE
-                   seconde DELIMITED BY SPACE 
-           INTO date_heure_solde
-           
-           DISPLAY "STR date_heure_solde :", date_heure_solde
-           
-           OPEN EXTEND le_solde.
-           MOVE solde TO montant_solde.     
-           MOVE ESPACE TO espace_solde. 
-           MOVE "SOLDE : " TO label_solde
-           WRITE soldes_file
-           END-WRITE
-           CLOSE le_solde.
-         
+               

@@ -8,7 +8,7 @@
        01  LS-MONTANT PIC 9(5).
       
        PROCEDURE DIVISION USING LS-MONTANT.
-           DISPLAY "Sub_program: Montant envoyé par le subprogram", 
+           DISPLAY "Sub_program: ", 
                    LS-MONTANT.
            STOP RUN.
 

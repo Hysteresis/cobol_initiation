@@ -1,5 +1,5 @@
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. depot.
+       PROGRAM-ID. nouveau_solde.
        
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -9,8 +9,8 @@
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS WS-FILE-STATUS.
        
-           SELECT historique ASSIGN TO 'historique' 
-           ORGANIZATION  IS LINE SEQUENTIAL.
+       *>    SELECT historique ASSIGN TO 'historique' 
+       *>    ORGANIZATION  IS LINE SEQUENTIAL.
        
        *> -m pour le subprogram et pas -x
        DATA DIVISION.
@@ -28,15 +28,14 @@
            05  label_solde PIC X(7) VALUES "Solde :" .
            05  montant_solde PIC 9(4)V99.
        01  str_solde PIC X(20).
-       FD historique.
-       01 transactions.
-           05  date_heure_transaction PIC X(14) VALUES SPACES.
-           05  espace_transaction PIC X(2) .
-           05  action_transaction PIC X(10) VALUES SPACES.
-           05  montant_transaction PIC 9(4)V99.
+       *>FD historique.
+       *>01 transactions.
+       *>    05  date_heure_transaction PIC X(14) VALUES SPACES.
+       *>    05  espace_transaction PIC X(2) .
+       *>    05  action_transaction PIC X(10) VALUES SPACES.
+       *>    05  montant_transaction PIC 9(4)V99.
        WORKING-STORAGE SECTION.
        01  ws-file-status pic XX.
-       01  solde USAGE COMP-1 VALUE 100 .
        01  solde_b USAGE COMP-1 VALUE 200 .
        01  compte_b PIC 9(4) VALUE 0545.
        01  compte_x PIC 9(4) VALUE 0545.
@@ -73,42 +72,56 @@
        77  myDisplayMessage pic X(100).
        LINKAGE SECTION.
        01  ls_operation PIC X.
-       01  ls_MONTANT_DEPOT PIC 9(4)V99 COMP.
        01  ls_solde USAGE COMP-1.
-
-       PROCEDURE DIVISION USING ls_operation, LS_MONTANT_DEPOT, 
-                                   ls_solde.
+       
+       PROCEDURE DIVISION USING ls_operation, ls_solde.
            EVALUATE ls_operation
-           WHEN "D" PERFORM DEPOT
+           WHEN "N" PERFORM SOLDE_NOUVEAU
+           DISPLAY "**** GATE Nouveau solde  *****"
            END-EVALUATE.
        
            STOP RUN.
-       
-       DEPOT.
-           DISPLAY tiret_menu.
-           DISPLAY "---->  depot :".
-           DISPLAY tiret_menu.
-           ACCEPT ls_MONTANT_DEPOT.
-           COMPUTE ls_solde = ls_solde + LS_MONTANT_DEPOT.
-           PERFORM HISTORIQUE_DEPOT
+          
+ 
+       SOLDE_NOUVEAU.
            
-           DISPLAY "Gate depot".
+           DISPLAY saut_ligne.
+           DISPLAY etoiles.
+           DISPLAY " Votre nouveau solde : ",ls_solde, " € "
+           DISPLAY etoiles.
+           DISPLAY saut_ligne.
        
+           MOVE FUNCTION CURRENT-DATE TO date_heure.
+           MOVE annee TO annee_solde.
+           MOVE mois TO mois_solde
+           MOVE jour TO jour_solde
+           MOVE heure TO heure_solde
+           MOVE minute TO minute_solde
+           MOVE seconde TO seconde_solde
        
-       HISTORIQUE_DEPOT.
-           OPEN EXTEND historique.
-           MOVE "Depot :" TO action_transaction.
-           MOVE LS_MONTANT_DEPOT TO montant_transaction.
-       
-           MOVE FUNCTION CURRENT-DATE TO date_heure_trans.         
-           MOVE date_heure_trans TO date_heure_transaction.
-       
-           MOVE ESPACE TO ESPACE_TRANSACTION.
-           WRITE transactions
-       
+           STRING annee DELIMITED BY SPACE 
+                      '/' DELIMITED BY SPACE
+                      mois DELIMITED BY SPACE 
+                      '/' DELIMITED BY SPACE
+                      jour DELIMITED BY SPACE 
+                      '/' DELIMITED BY SPACE
+                      heure DELIMITED BY SPACE 
+                      ':'  DELIMITED BY SPACE
+                      minute DELIMITED BY SPACE 
+                       '.'  DELIMITED BY SPACE
+                      seconde DELIMITED BY SPACE 
+           INTO date_heure_solde
+           
+           DISPLAY "STR date_heure_solde :", date_heure_solde
+           
+           OPEN EXTEND le_solde.
+           MOVE ls_solde TO montant_solde.     
+           MOVE ESPACE TO espace_solde. 
+           MOVE "SOLDE : " TO label_solde
+           WRITE soldes_file
            END-WRITE
-           CLOSE historique.
-       
+           CLOSE le_solde.
+        
            EXIT PROGRAM.
-       END PROGRAM depot.
-       
+       END PROGRAM nouveau_solde.
+      

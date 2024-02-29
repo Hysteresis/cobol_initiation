@@ -1,32 +1,33 @@
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. virement.
-
+       PROGRAM-ID. mon_solde.
+       
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
-
+       
        FILE-CONTROL.
            SELECT le_solde ASSIGN TO 'le_solde' 
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS WS-FILE-STATUS.
-
+       
            SELECT historique ASSIGN TO 'historique' 
            ORGANIZATION  IS LINE SEQUENTIAL.
+       
        *> -m pour le subprogram et pas -x
        DATA DIVISION.
        FILE SECTION.
        FD le_solde.
        01 soldes_file.
            05  date_heure_solde.
-               10 annee_solde   PIC X(5).
-               10 mois_solde     PIC X(3).
-               10 jour_solde     PIC X(3).
-               10 heure_solde    PIC X(3).
-               10 minute_solde   PIC X(3).
-               10 seconde_solde PIC X(3).
+                  10 annee_solde   PIC X(5).
+                  10 mois_solde     PIC X(3).
+                  10 jour_solde     PIC X(3).
+                  10 heure_solde    PIC X(3).
+                  10 minute_solde   PIC X(3).
+                  10 seconde_solde PIC X(3).
            05  espace_solde PIC X(2)  VALUES SPACES.
            05  label_solde PIC X(7) VALUES "Solde :" .
            05  montant_solde PIC 9(4)V99.
-       01  str_solde PIC X(20).  
+       01  str_solde PIC X(20).
        FD historique.
        01 transactions.
            05  date_heure_transaction PIC X(14) VALUES SPACES.
@@ -35,6 +36,7 @@
            05  montant_transaction PIC 9(4)V99.
        WORKING-STORAGE SECTION.
        01  ws-file-status pic XX.
+       *>01  solde USAGE COMP-1 VALUE 100 .
        01  solde_b USAGE COMP-1 VALUE 200 .
        01  compte_b PIC 9(4) VALUE 0545.
        01  compte_x PIC 9(4) VALUE 0545.
@@ -44,7 +46,7 @@
        01  somme_a_virer PIC 9(4)V99.
        01  choix_menu PIC X.
        01  continuer PIC X.
-
+       
        01 date_heure. 
            05 annee   PIC X(4).
            05 mois    PIC X(2).
@@ -52,7 +54,7 @@
            05 heure   PIC X(2).
            05 minute  PIC X(2).
            05 seconde PIC X(2).
-
+       
        01  transaction.
            02 montant PIC 9(5)V99.
            02 action PIC X(20).
@@ -71,52 +73,24 @@
        77  myDisplayMessage pic X(100).
        LINKAGE SECTION.
        01  ls_operation PIC X.
-       01  ls_MONTANT_VIREMENT PIC 9(4)V99 COMP.
+       01  ls_MONTANT_DEPOT PIC 9(4)V99 COMP.
        01  ls_solde USAGE COMP-1.
-
-       PROCEDURE DIVISION USING ls_operation, ls_MONTANT_VIREMENT, 
-                                   ls_solde.
+       
+       PROCEDURE DIVISION USING ls_operation, ls_solde.
            EVALUATE ls_operation
-           WHEN "V" PERFORM VIREMENT
+           WHEN "S" PERFORM MON_SOLDE
            END-EVALUATE.
-           
+       
            STOP RUN.
-
-       VIREMENT.
-           DISPLAY "Saisir le compte à solder:".
-      *>   saisir le compte a solder : 0545    
-           ACCEPT compte_x.
-           if compte_x =  COMPTE_B THEN
-               DISPLAY "Saisir la somme à virer:"
-               ACCEPT ls_MONTANT_VIREMENT
-               if ls_MONTANT_VIREMENT < ls_solde THEN
-                   COMPUTE SOLDE_B = SOLDE_B + ls_MONTANT_VIREMENT
-                   COMPUTE ls_solde = ls_solde - ls_MONTANT_VIREMENT
-                   DISPLAY "--> Le virement de ", 
-                               ls_MONTANT_VIREMENT , 
-                               " € a bien été effectué"
-                   PERFORM HISTORIQUE_VIREMENT
-                        
-                ELSE 
-                   DISPLAY "Votre solde ne permet pas de virer ", 
-                               ls_MONTANT_VIREMENT 
-                               " €, car Votre SOLDE :", 
-                               ls_solde 
-                        
-           ELSE 
-               DISPLAY " Numero de compte erroné"
-           END-IF.
-           
-       HISTORIQUE_VIREMENT.
-           OPEN EXTEND historique.
-           MOVE "Virement :" TO action_transaction.
-           MOVE ls_MONTANT_VIREMENT TO montant_transaction.  
-           MOVE FUNCTION CURRENT-DATE TO date_heure_trans.         
-           MOVE date_heure_trans TO date_heure_transaction.
-           MOVE ESPACE TO ESPACE_TRANSACTION.
-           WRITE transactions
-           END-WRITE
-           CLOSE historique.
-           
+          
+       
+       MON_SOLDE.
+           DISPLAY saut_ligne.
+           DISPLAY etoiles.
+           DISPLAY "     Mon solde : ",ls_solde, " € ".
+           DISPLAY etoiles.
+           DISPLAY saut_ligne.
+          
            EXIT PROGRAM.
-       END PROGRAM virement.
+       END PROGRAM mon_solde.
+      
