@@ -46,7 +46,6 @@
                   CLOSE le_solde
            END-IF.
            CLOSE le_solde.
-           DISPLAY "Gate verifier_fichier".
     
            EXIT PROGRAM.
        END PROGRAM verifier_fichier.

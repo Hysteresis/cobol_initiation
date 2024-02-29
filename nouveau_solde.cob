@@ -9,10 +9,6 @@
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS WS-FILE-STATUS.
        
-       *>    SELECT historique ASSIGN TO 'historique' 
-       *>    ORGANIZATION  IS LINE SEQUENTIAL.
-       
-       *> -m pour le subprogram et pas -x
        DATA DIVISION.
        FILE SECTION.
        FD le_solde.
@@ -28,12 +24,7 @@
            05  label_solde PIC X(7) VALUES "Solde :" .
            05  montant_solde PIC 9(4)V99.
        01  str_solde PIC X(20).
-       *>FD historique.
-       *>01 transactions.
-       *>    05  date_heure_transaction PIC X(14) VALUES SPACES.
-       *>    05  espace_transaction PIC X(2) .
-       *>    05  action_transaction PIC X(10) VALUES SPACES.
-       *>    05  montant_transaction PIC 9(4)V99.
+
        WORKING-STORAGE SECTION.
        01  ws-file-status pic XX.
        01  solde_b USAGE COMP-1 VALUE 200 .
@@ -77,14 +68,11 @@
        PROCEDURE DIVISION USING ls_operation, ls_solde.
            EVALUATE ls_operation
            WHEN "N" PERFORM SOLDE_NOUVEAU
-           DISPLAY "**** GATE Nouveau solde  *****"
            END-EVALUATE.
        
-           STOP RUN.
-          
+           STOP RUN.      
  
-       SOLDE_NOUVEAU.
-           
+       SOLDE_NOUVEAU.    
            DISPLAY saut_ligne.
            DISPLAY etoiles.
            DISPLAY " Votre nouveau solde : ",ls_solde, " € "
@@ -112,7 +100,7 @@
                       seconde DELIMITED BY SPACE 
            INTO date_heure_solde
            
-           DISPLAY "STR date_heure_solde :", date_heure_solde
+           DISPLAY date_heure_solde
            
            OPEN EXTEND le_solde.
            MOVE ls_solde TO montant_solde.     
